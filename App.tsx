@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React from "react";
+import { StyleSheet, View } from "react-native";
 import Enakin from "./components/persons/Enakin";
 
 export default function App() {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, View, Text, Image } from "react-native";
 
 interface IProps {
   name: string;
@@ -8,47 +8,26 @@ interface IProps {
   skin_color: string;
 }
 
-const NewPersons = () => {
-  const [isLoaded, setisLoaded] = useState(false);
-  const [personData, setPersonData] = useState<IProps>({
-    name: "",
-    height: "",
-    mass: "",
-    skin_color: "",
-  });
-
-  useEffect(() => {
-    fetch("https://swapi.py4e.com/api/people/1/")
-      .then((response) => response.json())
-      .then((result) => {
-        setPersonData(result);
-        setisLoaded(true);
-      })
-      .catch((error) => console.error(error));
-  }, []);
-
-  if (!isLoaded) {
-    return <Text style={styles.loaded}>...Загрузка</Text>;
-  }
-
+const NewPersons = (props: IProps) => {
+  const { name, height, mass, skin_color } = props;
   return (
     <View>
       <View style={styles.container}>
-        <View style={styles.haractersistics}>
+        <View style={styles.characteristics}>
           <Text>Имя:</Text>
-          <Text>{personData.name}</Text>
+          <Text>{name}</Text>
         </View>
-        <View style={styles.haractersistics}>
+        <View style={styles.characteristics}>
           <Text>Рост:</Text>
-          <Text>{personData.height}</Text>
+          <Text>{height}</Text>
         </View>
-        <View style={styles.haractersistics}>
+        <View style={styles.characteristics}>
           <Text>Вес:</Text>
-          <Text>{personData.mass}</Text>
+          <Text>{mass}</Text>
         </View>
-        <View style={styles.haractersistics}>
+        <View style={styles.characteristics}>
           <Text>Внутренняя черта:</Text>
-          <Text>{personData.skin_color}</Text>
+          <Text>{skin_color}</Text>
         </View>
       </View>
     </View>
@@ -56,16 +35,11 @@ const NewPersons = () => {
 };
 
 const styles = StyleSheet.create({
-  loaded: {
-    flex: 1,
-    justifyContent: "center",
-    alignSelf: "center",
-  },
   container: {
     justifyContent: "center",
     alignItems: "center",
   },
-  haractersistics: {
+  characteristics: {
     flexDirection: "row",
     marginBottom: 10,
     justifyContent: "space-between",
