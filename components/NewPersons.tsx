@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Image, Button } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 interface IProps {
   name: string;
   height: string;
   mass: string;
   skin_color: string;
-  onData: (data: IProps) => void;
 }
 
-const NewPersons = ({ onData }: IProps) => {
+const NewPersons = () => {
   const [isLoaded, setisLoaded] = useState(false);
   const [personData, setPersonData] = useState<IProps>({
     name: "",
@@ -24,7 +23,6 @@ const NewPersons = ({ onData }: IProps) => {
       .then((result) => {
         setPersonData(result);
         setisLoaded(true);
-        onData(result); // Вызываем функцию обратного вызова и передаем данные
       })
       .catch((error) => console.error(error));
   }, []);
