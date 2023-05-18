@@ -1,21 +1,22 @@
 import React, { useState, useRef } from "react";
 import { StyleSheet, View, TouchableOpacity, Text, Animated } from "react-native";
 import SwipeGesture from "react-native-swipe-gestures";
+import { AntDesign } from "@expo/vector-icons";
 import Beru from "../persons/Beru";
 import Biggs from "../persons/Biggs";
 import BlueDroid from "../persons/blueDroid";
 import Droid from "../persons/Droid";
-import Enakin from "../persons/Enakin";
+import Enakin from "../persons/Anakin";
 import Kenobi from "../persons/Kenobi";
 import Leia from "../persons/Leia";
 import Owen from "../persons/Owen";
 import RedDroid from "../persons/RedDroid";
 import Vader from "../persons/Vader";
-import { AntDesign } from "@expo/vector-icons";
 
 const ListsPersons = () => {
-  const [slideIndex, setSlideIndex] = useState(0);
-  const swipeAnimation = useRef(new Animated.Value(0)).current;
+  const [slideIndex, setSlideIndex] = useState<number>(0);
+  const swipeAnimation = useRef(new Animated.ValueXY()).current;
+  const [deletedSlides, setDeletedSlides] = useState<number[]>([]);
 
   const slides = [
     <Enakin key={0} />,
@@ -32,16 +33,17 @@ const ListsPersons = () => {
 
   const totalSlides = slides.length;
   const width = 300;
+  const height = 300;
 
   const onSwipeLeft = () => {
     if (slideIndex < totalSlides - 1) {
       Animated.timing(swipeAnimation, {
-        toValue: -width,
+        toValue: { x: -width, y: 0 },
         duration: 300,
         useNativeDriver: true,
       }).start(() => {
         setSlideIndex(slideIndex + 1);
-        swipeAnimation.setValue(0);
+        swipeAnimation.setValue({ x: 0, y: 0 });
       });
     }
   };
@@ -49,20 +51,72 @@ const ListsPersons = () => {
   const onSwipeRight = () => {
     if (slideIndex > 0) {
       Animated.timing(swipeAnimation, {
-        toValue: width,
+        toValue: { x: width, y: 0 },
         duration: 300,
         useNativeDriver: true,
       }).start(() => {
         setSlideIndex(slideIndex - 1);
-        swipeAnimation.setValue(0);
+        swipeAnimation.setValue({ x: 0, y: 0 });
       });
     }
   };
+
+  const onSwipeDown = () => {
+    Animated.timing(swipeAnimation, {
+      toValue: { x: 0, y: height },
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      const updatedDeletedSlides: number[] = [...deletedSlides, slideIndex];
+      setDeletedSlides(updatedDeletedSlides);
+      let nextSlideIndex: number = slideIndex;
+      while (updatedDeletedSlides.includes(nextSlideIndex)) {
+        nextSlideIndex = (nextSlideIndex + 1) % totalSlides;
+        if (updatedDeletedSlides.length === totalSlides) {
+          nextSlideIndex = 0;
+          setDeletedSlides([]);
+          break;
+        }
+      }
+      setSlideIndex(nextSlideIndex);
+      swipeAnimation.setValue({ x: 0, y: 0 });
+    });
+  };
+
+  const isSlideDeleted = deletedSlides.includes(slideIndex);
+
+  if (isSlideDeleted) {
+    return (
+      <SwipeGesture
+        onSwipeLeft={onSwipeLeft}
+        onSwipeRight={onSwipeRight}
+        onSwipeDown={onSwipeDown}
+        config={{
+          velocityThreshold: 0.3,
+          directionalOffsetThreshold: 50,
+        }}
+        style={styles.swiper}
+      >
+        <View style={styles.content}>
+          <View style={styles.emptySlide} />
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={[styles.button, styles.disabledButton]} disabled={true}>
+            <AntDesign name="left" size={24} color="gray" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={onSwipeLeft} disabled={false}>
+            <AntDesign name="right" size={24} color="gray" />
+          </TouchableOpacity>
+        </View>
+      </SwipeGesture>
+    );
+  }
 
   return (
     <SwipeGesture
       onSwipeLeft={onSwipeLeft}
       onSwipeRight={onSwipeRight}
+      onSwipeDown={onSwipeDown}
       config={{
         velocityThreshold: 0.3,
         directionalOffsetThreshold: 50,
@@ -74,7 +128,7 @@ const ListsPersons = () => {
           style={[
             styles.slide,
             {
-              transform: [{ translateX: swipeAnimation }],
+              transform: swipeAnimation.getTranslateTransform(),
             },
           ]}
         >
@@ -113,6 +167,11 @@ const styles = StyleSheet.create({
   },
   slide: {
     flex: 1,
+  },
+  emptySlide: {
+    width: 300,
+    height: 300,
+    backgroundColor: "gray",
   },
   buttonContainer: {
     flexDirection: "row",

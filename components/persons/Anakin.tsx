@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Image, Text } from "react-native";
-import NewPersons from "./../NewPersons";
+import NewPersons from "../NewPersons";
 
 interface Idata {
   name: string;
@@ -9,7 +9,7 @@ interface Idata {
   skin_color: string;
 }
 
-export default function Enakin() {
+export default function nakin() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [data, setData] = useState<Idata | null>(null);
   const imageEnakin = require("./../../assets/Enakin.png");
