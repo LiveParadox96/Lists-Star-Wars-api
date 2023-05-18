@@ -43,12 +43,13 @@ export default function Kenobi() {
 
 const styles = StyleSheet.create({
   loaded: {
-    position: "absolute",
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
-    top: 300,
+    position: "absolute",
+    top: 250,
     left: 0,
+    right: 0,
     width: 200,
   },
   container: {

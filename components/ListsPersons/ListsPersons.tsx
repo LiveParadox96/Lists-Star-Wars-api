@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
+import React, { useState, useRef } from "react";
+import { StyleSheet, View, TouchableOpacity, Text, Animated } from "react-native";
 import SwipeGesture from "react-native-swipe-gestures";
 import Beru from "../persons/Beru";
 import Biggs from "../persons/Biggs";
@@ -15,6 +15,7 @@ import { AntDesign } from "@expo/vector-icons";
 
 const ListsPersons = () => {
   const [slideIndex, setSlideIndex] = useState(0);
+  const swipeAnimation = useRef(new Animated.Value(0)).current;
 
   const slides = [
     <Enakin key={0} />,
@@ -30,16 +31,31 @@ const ListsPersons = () => {
   ];
 
   const totalSlides = slides.length;
+  const width = 300;
 
   const onSwipeLeft = () => {
     if (slideIndex < totalSlides - 1) {
-      setSlideIndex(slideIndex + 1);
+      Animated.timing(swipeAnimation, {
+        toValue: -width,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setSlideIndex(slideIndex + 1);
+        swipeAnimation.setValue(0);
+      });
     }
   };
 
   const onSwipeRight = () => {
     if (slideIndex > 0) {
-      setSlideIndex(slideIndex - 1);
+      Animated.timing(swipeAnimation, {
+        toValue: width,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => {
+        setSlideIndex(slideIndex - 1);
+        swipeAnimation.setValue(0);
+      });
     }
   };
 
@@ -53,7 +69,18 @@ const ListsPersons = () => {
       }}
       style={styles.swiper}
     >
-      <View style={styles.content}>{slides[slideIndex]}</View>
+      <View style={styles.content}>
+        <Animated.View
+          style={[
+            styles.slide,
+            {
+              transform: [{ translateX: swipeAnimation }],
+            },
+          ]}
+        >
+          {slides[slideIndex]}
+        </Animated.View>
+      </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={[styles.button, slideIndex === 0 && styles.disabledButton]}
@@ -82,6 +109,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    flex: 1,
+  },
+  slide: {
     flex: 1,
   },
   buttonContainer: {

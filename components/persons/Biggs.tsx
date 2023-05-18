@@ -47,6 +47,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
+    flexWrap: "wrap-reverse",
+    position: "absolute",
+    top: 250,
+    left: 0,
+    right: 0,
+    width:200
   },
   container: {
     flex: 1,
