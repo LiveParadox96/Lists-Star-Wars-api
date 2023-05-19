@@ -1,5 +1,11 @@
-import React, { useState, useRef } from "react";
-import { StyleSheet, View, TouchableOpacity, Text, Animated } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Text,
+  Animated,
+} from "react-native";
 import SwipeGesture from "react-native-swipe-gestures";
 import { AntDesign } from "@expo/vector-icons";
 import Beru from "../persons/Beru";
@@ -14,24 +20,28 @@ import RedDroid from "../persons/RedDroid";
 import Vader from "../persons/Vader";
 
 const ListsPersons = () => {
-  const [slideIndex, setSlideIndex] = useState<number>(0);
+  const [slideIndex, setSlideIndex] = useState(0);
   const swipeAnimation = useRef(new Animated.ValueXY()).current;
-  const [deletedSlides, setDeletedSlides] = useState<number[]>([]);
+  const [deletedSlides, setDeletedSlides] = useState([]);
 
   const slides = [
-    <Enakin key={0} />,
-    <Droid key={1} />,
-    <BlueDroid key={2} />,
-    <Vader key={3} />,
-    <Leia key={4} />,
-    <Owen key={5} />,
-    <Beru key={6} />,
-    <RedDroid key={7} />,
-    <Biggs key={8} />,
-    <Kenobi key={9} />,
+    { key: "enakin", component: <Enakin /> },
+    { key: "droid", component: <Droid /> },
+    { key: "blueDroid", component: <BlueDroid /> },
+    { key: "vader", component: <Vader /> },
+    { key: "leia", component: <Leia /> },
+    { key: "owen", component: <Owen /> },
+    { key: "beru", component: <Beru /> },
+    { key: "redDroid", component: <RedDroid /> },
+    { key: "biggs", component: <Biggs /> },
+    { key: "kenobi", component: <Kenobi /> },
   ];
 
-  const totalSlides = slides.length;
+  const filteredSlides = slides.filter(
+    (slide) => !deletedSlides.includes(slide.key as never)
+  );
+
+  const totalSlides = filteredSlides.length;
   const width = 300;
   const height = 300;
 
@@ -67,50 +77,60 @@ const ListsPersons = () => {
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      const updatedDeletedSlides: number[] = [...deletedSlides, slideIndex];
-      setDeletedSlides(updatedDeletedSlides);
-      let nextSlideIndex: number = slideIndex;
-      while (updatedDeletedSlides.includes(nextSlideIndex)) {
-        nextSlideIndex = (nextSlideIndex + 1) % totalSlides;
-        if (updatedDeletedSlides.length === totalSlides) {
+      const deletedSlideKey = filteredSlides[slideIndex]?.key;
+      if (deletedSlideKey) {
+        const updatedDeletedSlides = [...deletedSlides, deletedSlideKey];
+        setDeletedSlides(updatedDeletedSlides as never);
+
+        const remainingSlides = filteredSlides.filter(
+          (slide) => slide.key !== deletedSlideKey
+        );
+
+        let nextSlideIndex = slideIndex;
+
+        if (slideIndex === totalSlides - 1) {
           nextSlideIndex = 0;
-          setDeletedSlides([]);
-          break;
+        } else if (deletedSlideKey === filteredSlides[totalSlides - 1]?.key) {
+          nextSlideIndex = slideIndex;
+        } else {
+          nextSlideIndex = slideIndex + 1;
         }
+
+        setSlideIndex(nextSlideIndex);
       }
-      setSlideIndex(nextSlideIndex);
+
       swipeAnimation.setValue({ x: 0, y: 0 });
     });
   };
 
-  const isSlideDeleted = deletedSlides.includes(slideIndex);
+  useEffect(() => {
+    const initialSlideIndex = filteredSlides.findIndex(
+      (slide) => slide.key === "enakin"
+    );
+    if (initialSlideIndex !== -1) {
+      setSlideIndex(initialSlideIndex);
+    }
+  }, []);
 
-  if (isSlideDeleted) {
+  if (totalSlides === 0) {
     return (
-      <SwipeGesture
-        onSwipeLeft={onSwipeLeft}
-        onSwipeRight={onSwipeRight}
-        onSwipeDown={onSwipeDown}
-        config={{
-          velocityThreshold: 0.3,
-          directionalOffsetThreshold: 50,
-        }}
-        style={styles.swiper}
-      >
-        <View style={styles.content}>
-          <View style={styles.emptySlide} />
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={[styles.button, styles.disabledButton]} disabled={true}>
-            <AntDesign name="left" size={24} color="gray" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={onSwipeLeft} disabled={false}>
-            <AntDesign name="right" size={24} color="gray" />
-          </TouchableOpacity>
-        </View>
-      </SwipeGesture>
+      <View style={styles.centeredTextContainer}>
+        <Text style={styles.centeredText}>Ни осталось ни одного персонажа</Text>
+      </View>
     );
   }
+
+  let previousSlideIndex = slideIndex - 1;
+  let prevSlide = null;
+  while (previousSlideIndex >= 0) {
+    if (!deletedSlides.includes(filteredSlides[previousSlideIndex].key as never)) {
+      prevSlide = filteredSlides[previousSlideIndex].component;
+      break;
+    }
+    previousSlideIndex--;
+  }
+
+  const previousSlide = prevSlide;
 
   return (
     <SwipeGesture
@@ -132,7 +152,9 @@ const ListsPersons = () => {
             },
           ]}
         >
-          {slides[slideIndex]}
+          {deletedSlides.includes(filteredSlides[slideIndex]?.key as never)
+            ? previousSlide
+            : filteredSlides[slideIndex]?.component}
         </Animated.View>
       </View>
       <View style={styles.buttonContainer}>
@@ -184,6 +206,15 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     opacity: 0.3,
+  },
+  centeredTextContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  centeredText: {
+    fontSize: 20,
+    fontWeight: "bold",
   },
 });
 
