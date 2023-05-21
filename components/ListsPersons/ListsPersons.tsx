@@ -123,7 +123,9 @@ const ListsPersons = () => {
   let previousSlideIndex = slideIndex - 1;
   let prevSlide = null;
   while (previousSlideIndex >= 0) {
-    if (!deletedSlides.includes(filteredSlides[previousSlideIndex].key as never)) {
+    if (
+      !deletedSlides.includes(filteredSlides[previousSlideIndex].key as never)
+    ) {
       prevSlide = filteredSlides[previousSlideIndex].component;
       break;
     }
@@ -176,6 +178,17 @@ const ListsPersons = () => {
           <AntDesign name="right" size={24} color="gray" />
         </TouchableOpacity>
       </View>
+      <View>
+        <AntDesign
+          name="arrowdown"
+          size={100}
+          color="gray"
+          style={styles.arrowdown}
+        />
+      </View>
+      <View>
+        <AntDesign name="delete" size={30} color="red" style={styles.delete} />
+      </View>
     </SwipeGesture>
   );
 };
@@ -215,6 +228,17 @@ const styles = StyleSheet.create({
   centeredText: {
     fontSize: 20,
     fontWeight: "bold",
+  },
+  arrowdown: {
+    position: "absolute",
+    bottom: 110,
+    alignSelf: "center",
+  },
+  delete: {
+    justifyContent: "center",
+    alignSelf: "center",
+    position: "absolute",
+    bottom: 40,
   },
 });
 
