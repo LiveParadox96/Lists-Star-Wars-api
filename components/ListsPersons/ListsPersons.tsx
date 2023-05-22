@@ -5,43 +5,59 @@ import {
   TouchableOpacity,
   Text,
   Animated,
+  Image,
 } from "react-native";
 import SwipeGesture from "react-native-swipe-gestures";
 import { AntDesign } from "@expo/vector-icons";
-import Beru from "../persons/Beru";
-import Biggs from "../persons/Biggs";
-import BlueDroid from "../persons/blueDroid";
-import Droid from "../persons/Droid";
-import Enakin from "../persons/Anakin";
-import Kenobi from "../persons/Kenobi";
-import Leia from "../persons/Leia";
-import Owen from "../persons/Owen";
-import RedDroid from "../persons/RedDroid";
-import Vader from "../persons/Vader";
+import NewPersons from "../NewPersons";
+
+interface Idata {
+  id: string;
+  name: string;
+  height: string;
+  mass: string;
+  skin_color: string;
+  image: string;
+  homeworld: string;
+  key: string;
+}
 
 const ListsPersons = () => {
   const [slideIndex, setSlideIndex] = useState(0);
   const swipeAnimation = useRef(new Animated.ValueXY()).current;
-  const [deletedSlides, setDeletedSlides] = useState([]);
+  const [deletedSlides, setDeletedSlides] = useState<string[]>([]);
+  const [slides, setSlides] = useState<Idata[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [data, setData] = useState<Idata[] | null>(null);
 
-  const slides = [
-    { key: "enakin", component: <Enakin /> },
-    { key: "droid", component: <Droid /> },
-    { key: "blueDroid", component: <BlueDroid /> },
-    { key: "vader", component: <Vader /> },
-    { key: "leia", component: <Leia /> },
-    { key: "owen", component: <Owen /> },
-    { key: "beru", component: <Beru /> },
-    { key: "redDroid", component: <RedDroid /> },
-    { key: "biggs", component: <Biggs /> },
-    { key: "kenobi", component: <Kenobi /> },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      const resolve = await fetch(
+        "https://akabab.github.io/starwars-api/api/all.json"
+      );
+      const result = await resolve.json();
+      console.log(result);
+      setData(result);
+      setIsLoaded(true);
+
+      const slides: Idata[] = result.map((persons: Idata) => {
+        return {
+          ...persons,
+          key: persons.id,
+        };
+      });
+
+      setSlides(slides);
+    };
+
+    fetchData();
+  }, []);
 
   const filteredSlides = slides.filter(
-    (slide) => !deletedSlides.includes(slide.key as never)
+    (slide) => !deletedSlides.includes(slide?.key as string)
   );
-
   const totalSlides = filteredSlides.length;
+
   const width = 300;
   const height = 300;
 
@@ -80,7 +96,7 @@ const ListsPersons = () => {
       const deletedSlideKey = filteredSlides[slideIndex]?.key;
       if (deletedSlideKey) {
         const updatedDeletedSlides = [...deletedSlides, deletedSlideKey];
-        setDeletedSlides(updatedDeletedSlides as never);
+        setDeletedSlides(updatedDeletedSlides);
 
         const remainingSlides = filteredSlides.filter(
           (slide) => slide.key !== deletedSlideKey
@@ -92,104 +108,106 @@ const ListsPersons = () => {
           nextSlideIndex = 0;
         } else if (deletedSlideKey === filteredSlides[totalSlides - 1]?.key) {
           nextSlideIndex = slideIndex;
-        } else {
-          nextSlideIndex = slideIndex + 1;
         }
 
         setSlideIndex(nextSlideIndex);
+        setSlides(remainingSlides);
+        swipeAnimation.setValue({ x: 0, y: 0 });
       }
-
-      swipeAnimation.setValue({ x: 0, y: 0 });
     });
   };
 
-  useEffect(() => {
-    const initialSlideIndex = filteredSlides.findIndex(
-      (slide) => slide.key === "enakin"
+  if (!isLoaded) {
+    return (
+      <View style={styles.centeredTextContainer}>
+        <Text style={styles.centeredText}>Loading...</Text>
+      </View>
     );
-    if (initialSlideIndex !== -1) {
-      setSlideIndex(initialSlideIndex);
-    }
-  }, []);
+  }
 
   if (totalSlides === 0) {
     return (
       <View style={styles.centeredTextContainer}>
-        <Text style={styles.centeredText}>Ни осталось ни одного персонажа</Text>
+        <Text style={styles.centeredText}>No slides to display.</Text>
       </View>
     );
   }
-
-  let previousSlideIndex = slideIndex - 1;
-  let prevSlide = null;
-  while (previousSlideIndex >= 0) {
-    if (
-      !deletedSlides.includes(filteredSlides[previousSlideIndex].key as never)
-    ) {
-      prevSlide = filteredSlides[previousSlideIndex].component;
-      break;
-    }
-    previousSlideIndex--;
-  }
-
-  const previousSlide = prevSlide;
+  console.log(filteredSlides[slideIndex]?.image);
 
   return (
-    <SwipeGesture
-      onSwipeLeft={onSwipeLeft}
-      onSwipeRight={onSwipeRight}
-      onSwipeDown={onSwipeDown}
-      config={{
-        velocityThreshold: 0.3,
-        directionalOffsetThreshold: 50,
-      }}
-      style={styles.swiper}
-    >
-      <View style={styles.content}>
-        <Animated.View
-          style={[
-            styles.slide,
-            {
-              transform: swipeAnimation.getTranslateTransform(),
-            },
-          ]}
-        >
-          {deletedSlides.includes(filteredSlides[slideIndex]?.key as never)
-            ? previousSlide
-            : filteredSlides[slideIndex]?.component}
-        </Animated.View>
+    <View style={styles.content}>
+      <SwipeGesture
+        style={styles.swiper}
+        onSwipeLeft={onSwipeLeft}
+        onSwipeRight={onSwipeRight}
+        onSwipeDown={onSwipeDown}
+        config={{ velocityThreshold: 0.3, directionalOffsetThreshold: 80 }}
+      >
+        <View style={styles.slideContainer}>
+          <Animated.View
+            style={[
+              styles.slide,
+              {
+                transform: [{ translateX: swipeAnimation.x }],
+              },
+            ]}
+          >
+            <Image
+              source={{ uri: filteredSlides[slideIndex]?.image }}
+              style={[styles.image, { resizeMode: "cover" }]}
+              onError={() => {
+                return (
+                  <View style={styles.image}>
+                    <Text>Изображение отсутствует</Text>
+                  </View>
+                );
+              }}
+            />
+            <NewPersons
+              image={filteredSlides[slideIndex]?.image}
+              name={filteredSlides[slideIndex]?.name}
+              height={filteredSlides[slideIndex]?.height}
+              mass={filteredSlides[slideIndex]?.mass}
+              homeworld={filteredSlides[slideIndex]?.homeworld}
+            />
+          </Animated.View>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              {
+                opacity: slideIndex === 0 ? 0.3 : 1,
+              },
+            ]}
+            disabled={slideIndex === 0}
+            onPress={onSwipeRight}
+          >
+            <AntDesign name="arrowleft" size={32} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.button,
+              {
+                opacity: slideIndex === totalSlides - 1 ? 0.3 : 1,
+              },
+            ]}
+            disabled={slideIndex === totalSlides - 1}
+            onPress={onSwipeLeft}
+          >
+            <AntDesign name="arrowright" size={32} color="black" />
+          </TouchableOpacity>
+        </View>
+      </SwipeGesture>
+      <View style={styles.arrowdown}>
+        <AntDesign name="arrowdown" size={32} color="black" />
       </View>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[styles.button, slideIndex === 0 && styles.disabledButton]}
-          onPress={onSwipeRight}
-          disabled={slideIndex === 0}
-        >
-          <AntDesign name="left" size={24} color="gray" />
+      <View style={styles.delete}>
+        <TouchableOpacity onPress={onSwipeDown}>
+          <AntDesign name="delete" size={32} color="red" />
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            slideIndex === totalSlides - 1 && styles.disabledButton,
-          ]}
-          onPress={onSwipeLeft}
-          disabled={slideIndex === totalSlides - 1}
-        >
-          <AntDesign name="right" size={24} color="gray" />
-        </TouchableOpacity>
       </View>
-      <View>
-        <AntDesign
-          name="arrowdown"
-          size={100}
-          color="gray"
-          style={styles.arrowdown}
-        />
-      </View>
-      <View>
-        <AntDesign name="delete" size={30} color="red" style={styles.delete} />
-      </View>
-    </SwipeGesture>
+    </View>
   );
 };
 
@@ -199,9 +217,31 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: "#978195",
+    width: "100%",
+  },
+  image: {
+    resizeMode: "cover",
+    aspectRatio: 0.5,
+    width: 190,
+    height: 220,
+    overflow: "hidden",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginBottom: 5,
+  },
+  slideContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   slide: {
     flex: 1,
+    justifyContent: "center",
   },
   emptySlide: {
     width: 300,
@@ -209,13 +249,23 @@ const styles = StyleSheet.create({
     backgroundColor: "gray",
   },
   buttonContainer: {
+    position: "absolute",
+    bottom: 390,
+    maxWidth: 600,
+    left: -57, // Измените значение left на -10
+    right: -500,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+    zIndex: 13,
   },
   button: {
+    maxWidth: 400,
     flexDirection: "row",
     justifyContent: "space-between",
-    bottom: 400,
+    flex: 1,
+    marginLeft: 16,
+    marginRight: 16,
   },
   disabledButton: {
     opacity: 0.3,
@@ -226,19 +276,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   centeredText: {
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 16,
   },
   arrowdown: {
     position: "absolute",
-    bottom: 110,
+    height: 50,
+    bottom: 50,
     alignSelf: "center",
   },
   delete: {
-    justifyContent: "center",
-    alignSelf: "center",
     position: "absolute",
-    bottom: 40,
+    bottom: 10,
   },
 });
 

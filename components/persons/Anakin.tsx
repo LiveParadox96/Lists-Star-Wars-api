@@ -35,7 +35,6 @@ export default function nakin() {
         name={data?.name || ""}
         height={data?.height || ""}
         mass={data?.mass || ""}
-        skin_color={data?.skin_color || ""}
       />
     </View>
   );

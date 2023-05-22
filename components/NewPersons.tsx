@@ -2,17 +2,19 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
 
 interface IProps {
+  image: string;
   name: string;
   height: string;
   mass: string;
-  skin_color: string;
+  homeworld: string;
 }
 
 const NewPersons = (props: IProps) => {
-  const { name, height, mass, skin_color } = props;
+  const { image, name, height, mass, homeworld } = props;
   return (
     <View>
       <View style={styles.container}>
+        <Image source={{ uri: image }} />
         <View style={styles.characteristics}>
           <Text>Имя:</Text>
           <Text>{name}</Text>
@@ -26,8 +28,8 @@ const NewPersons = (props: IProps) => {
           <Text>{mass}</Text>
         </View>
         <View style={styles.characteristics}>
-          <Text>Внутренняя черта:</Text>
-          <Text>{skin_color}</Text>
+          <Text>Родная планета</Text>
+          <Text>{homeworld}</Text>
         </View>
       </View>
     </View>
