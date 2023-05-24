@@ -132,7 +132,14 @@ const ListsPersons = () => {
       </View>
     );
   }
-  console.log(filteredSlides[slideIndex]?.image);
+
+  if (filteredSlides[slideIndex]?.image == undefined || null) {
+    return (
+      <View style={styles.content}>
+        <Text>Изображение отсутствует</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.content}>
@@ -154,14 +161,7 @@ const ListsPersons = () => {
           >
             <Image
               source={{ uri: filteredSlides[slideIndex]?.image }}
-              style={[styles.image, { resizeMode: "cover" }]}
-              onError={() => {
-                return (
-                  <View style={styles.image}>
-                    <Text>Изображение отсутствует</Text>
-                  </View>
-                );
-              }}
+              style={[styles.image]}
             />
             <NewPersons
               image={filteredSlides[slideIndex]?.image}
@@ -172,35 +172,32 @@ const ListsPersons = () => {
             />
           </Animated.View>
         </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              {
-                opacity: slideIndex === 0 ? 0.3 : 1,
-              },
-            ]}
-            disabled={slideIndex === 0}
-            onPress={onSwipeRight}
-          >
-            <AntDesign name="arrowleft" size={32} color="black" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.button,
-              {
-                opacity: slideIndex === totalSlides - 1 ? 0.3 : 1,
-              },
-            ]}
-            disabled={slideIndex === totalSlides - 1}
-            onPress={onSwipeLeft}
-          >
-            <AntDesign name="arrowright" size={32} color="black" />
-          </TouchableOpacity>
-        </View>
       </SwipeGesture>
-      <View style={styles.arrowdown}>
-        <AntDesign name="arrowdown" size={32} color="black" />
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            {
+              opacity: slideIndex === 0 ? 0.3 : 1,
+            },
+          ]}
+          disabled={slideIndex === 0}
+          onPress={onSwipeRight}
+        >
+          <AntDesign name="arrowleft" size={32} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.button,
+            {
+              opacity: slideIndex === totalSlides - 1 ? 0.3 : 1,
+            },
+          ]}
+          disabled={slideIndex === totalSlides - 1}
+          onPress={onSwipeLeft}
+        >
+          <AntDesign name="arrowright" size={32} color="black" />
+        </TouchableOpacity>
       </View>
       <View style={styles.delete}>
         <TouchableOpacity onPress={onSwipeDown}>
@@ -222,17 +219,17 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     backgroundColor: "#978195",
     width: "100%",
+    paddingTop: 120,
+    paddingBottom: 120,
   },
   image: {
     resizeMode: "cover",
     aspectRatio: 0.5,
-    width: 190,
-    height: 220,
-    overflow: "hidden",
+    width: 180,
+    borderRadius: 50,
     flexDirection: "row",
     justifyContent: "center",
-    alignSelf: "center",
-    marginBottom: 5,
+    marginBottom: 10,
   },
   slideContainer: {
     flex: 1,
@@ -241,34 +238,29 @@ const styles = StyleSheet.create({
   },
   slide: {
     flex: 1,
+    alignItems: "center",
     justifyContent: "center",
-  },
-  emptySlide: {
-    width: 300,
-    height: 300,
-    backgroundColor: "gray",
+    backgroundColor: "white",
+    borderRadius: 10,
+    shadowColor: "#000",
   },
   buttonContainer: {
     position: "absolute",
-    bottom: 390,
-    maxWidth: 600,
-    left: -57, // Измените значение left на -10
-    right: -500,
     flexDirection: "row",
+    paddingHorizontal: 20,
+    borderColor: "black",
+    top: 400,
+    left: -20,
+    right: -20,
     justifyContent: "space-between",
-    alignItems: "center",
-    zIndex: 13,
   },
   button: {
-    maxWidth: 400,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    flex: 1,
-    marginLeft: 16,
-    marginRight: 16,
-  },
-  disabledButton: {
-    opacity: 0.3,
+    borderWidth: 1,
+    borderRadius: 30,
+    padding: 8,
+    backgroundColor: "white",
+    marginLeft: 2,
+    marginRight: 2,
   },
   centeredTextContainer: {
     flex: 1,
@@ -276,17 +268,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   centeredText: {
-    fontSize: 16,
-  },
-  arrowdown: {
-    position: "absolute",
-    height: 50,
-    bottom: 50,
-    alignSelf: "center",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   delete: {
     position: "absolute",
-    bottom: 10,
+    top: 80,
+    right: 10,
   },
 });
 

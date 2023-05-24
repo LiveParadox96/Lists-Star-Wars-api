@@ -40,12 +40,15 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
     alignItems: "center",
+    width: "100%",
   },
   characteristics: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 0,
     justifyContent: "space-between",
     width: 250,
+    paddingLeft: 20,
+    paddingRight: 20,
   },
 });
 
